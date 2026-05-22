@@ -65,7 +65,7 @@ joins `smc-traefik`.
 
 | Variable | Purpose |
 |---|---|
-| `DOMAIN` | Apex domain only (e.g. `showmeyourcode.online`). Each subdomain prefix lives in the service's Traefik label, not here. |
+| `DOMAIN` | Apex domain only. Each subdomain prefix lives in the service's Traefik label, not here. |
 | `CF_DNS_API_TOKEN` | Cloudflare API token for DNS-01. Zone-scoped. |
 | `TRAEFIK_LE_EMAIL` | Contact email for Let's Encrypt. |
 | `TRAEFIK_ENABLE_LE` | Set to `1` to enable LE in production. Leave **unset** locally to skip ACME. |
