@@ -1,0 +1,60 @@
+services:
+  traefik:
+    image: traefik:v3.7.1
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      # Enable the web dashboard
+      - "--api.dashboard=true"
+      - "${TRAEFIK_INSECURE_DASHBOARD:+--api.insecure=true}" # set in .env
+
+      # Docker provider
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=smc-traefik"
+
+      # File provider
+      - "--providers.file.directory=/etc/traefik/dynamic"
+      - "--providers.file.watch=true"
+
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--log.level=INFO"
+      - "--accesslog=true"
+
+      # Let's Encrypt
+      - "${TRAEFIK_ENABLE_LE:+--certificatesresolvers.cloudflare.acme.dnschallenge=true}"
+      - "${TRAEFIK_ENABLE_LE:+--certificatesresolvers.cloudflare.acme.dnschallenge.provider=cloudflare}"
+      - "${TRAEFIK_ENABLE_LE:+--certificatesresolvers.cloudflare.acme.email=${TRAEFIK_LE_EMAIL}}"
+      - "${TRAEFIK_ENABLE_LE:+--certificatesresolvers.cloudflare.acme.storage=/letsencrypt/acme.json}"
+      #- "${TRAEFIK_ENABLE_LE:+--certificatesresolvers.cloudflare.acme.dnschallenge.resolvers=1.1.1.1:53}"
+      # v3.7+ flag names (renamed from disablePropagationCheck / delayBeforeCheck).
+      - "${TRAEFIK_ENABLE_LE:+--certificatesresolvers.cloudflare.acme.dnschallenge.propagation.disableChecks=true}"
+      - "${TRAEFIK_ENABLE_LE:+--certificatesresolvers.cloudflare.acme.dnschallenge.propagation.delayBeforeChecks=30s}"
+    environment:
+      - CF_DNS_API_TOKEN=${CF_DNS_API_TOKEN}
+    ports:
+      - "80:80" # HTTP
+      - "443:443" # HTTPS
+      # Dashboard port bound to localhost only
+      - "127.0.0.1:8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./letsencrypt:/letsencrypt"
+      - "./dynamic:/etc/traefik/dynamic:ro"
+    networks:
+      - smc-traefik
+    labels:
+      - "traefik.enable=true"
+      # Dashboard served over HTTPS at traefik.${DOMAIN}
+      - "traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN}`)"
+      - "traefik.http.routers.dashboard.entrypoints=websecure"
+      - "traefik.http.routers.dashboard.tls=true"
+      - "traefik.http.routers.dashboard.tls.certresolver=cloudflare"
+      - "traefik.http.routers.dashboard.service=api@internal"
+
+networks:
+  smc-traefik:
+    external: true
