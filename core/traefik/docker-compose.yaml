@@ -6,7 +6,7 @@ services:
     command:
       # Enable the web dashboard
       - "--api.dashboard=true"
-      - "${TRAEFIK_INSECURE_DASHBOARD:+--api.insecure=true}" # set in .env
+      - "--api.insecure=${TRAEFIK_INSECURE_DASHBOARD:-false}" # set in .env
 
       # Docker provider
       - "--providers.docker=true"
