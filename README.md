@@ -8,15 +8,14 @@ This repository manages the infrastructure for the SMC online-code-test platform
 
 ```
 SMC-Infra/
-├── core/             # Core edge components
+├── core/
 │   └── traefik/
 │       ├── docker-compose.yaml
-│       ├── .env.example
-│       └── letsencrypt/    # cert store; acme.json gitignored
-├── scripts/          # Bash helpers invoked by the Makefile
+│       └── .env.example
+├── scripts/
 │   ├── core-manager.sh
 │   └── utils.sh
-└── Makefile          # Unified CLI for common operations
+└── Makefile
 ```
 
 ## Deployment
@@ -44,14 +43,9 @@ network-init     Create the shared smc-traefik network if it does not already ex
 # 1. Configure
 cd core/traefik
 cp .env.example .env
-# edit .env: DOMAIN, CF_DNS_API_TOKEN, TRAEFIK_LE_EMAIL, TRAEFIK_ENABLE_LE=1
+# fill in the values referenced in .env.example
 
-# 2. Certification
-mkdir -p letsencrypt
-touch letsencrypt/acme.json
-chmod 600 letsencrypt/acme.json
-
-# 3. Start
+# 2. Start
 cd ../..
 make core-up
 make logs
@@ -61,15 +55,10 @@ Subsequent subdomain certs (`cd.${DOMAIN}`, `exam.${DOMAIN}`, …) are
 issued automatically the moment a container with matching Traefik labels
 joins `smc-traefik`.
 
-## Environment Variables (`core/traefik/.env`)
+## Configuration
 
-| Variable | Purpose |
-|---|---|
-| `DOMAIN` | Apex domain only. Each subdomain prefix lives in the service's Traefik label, not here. |
-| `CF_DNS_API_TOKEN` | Cloudflare API token for DNS-01. Zone-scoped. |
-| `TRAEFIK_LE_EMAIL` | Contact email for Let's Encrypt. |
-| `TRAEFIK_ENABLE_LE` | Set to `1` to enable LE in production. Leave **unset** locally to skip ACME. |
-| `TRAEFIK_INSECURE_DASHBOARD` | Set to `true` for local dev only (exposes dashboard on `127.0.0.1:8080`). Leave unset in production. |
+See `core/traefik/.env.example` for the variables to set in
+`core/traefik/.env`.
 
 ## Adding a New Subdomain
 
