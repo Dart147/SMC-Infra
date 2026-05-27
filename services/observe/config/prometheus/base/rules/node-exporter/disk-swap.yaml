@@ -1,0 +1,24 @@
+groups:
+  - name: node_exporter_disk_swap
+    interval: 15s
+    rules:
+      # --- Swap Usage Alerts ---
+      - alert: HostSwapUsageHigh
+        expr: ((node_memory_SwapTotal_bytes - node_memory_SwapFree_bytes) / node_memory_SwapTotal_bytes) * 100 > 25
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host({{ $labels.instance_name }}) Swap Usage Critically High"
+          description: "Swap usage is above 25%. This may indicate severe memory pressure and result in slow I/O."
+
+      # --- Disk Space Usage (Root Partition) ---
+      - alert: HostDiskSpaceLow
+        expr: ((node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_avail_bytes{mountpoint="/"}) / node_filesystem_size_bytes{mountpoint="/"}) * 100 > 90
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host({{ $labels.instance_name }}) Root Disk Space Critically Low"
+          description: "Root partition usage is above 90%. Immediate cleanup required to prevent system failure."
+          

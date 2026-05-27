@@ -1,0 +1,25 @@
+groups:
+  - name: endpoint_status_code
+    interval: 15s
+    rules:
+      # Endpoint Status Code Alerts
+      - alert: EndpointStatusCodeError5xx
+        expr: probe_http_status_code >= 500 and on(instance) (probe_http_status_code{enable_alert_status_code="true"})
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.service }} ({{ $labels.env }}) Encountering Unexpected Internal Issues"
+          description: "The component is returning HTTP 5xx errors, indicating server-side failures. Immediate investigation is required to restore normal service operation."
+          runbook_url: "http://grafana:3000/d/blackbox-monitoring"
+
+      - alert: EndpointStatusCodeError4xx
+        expr: probe_http_status_code >= 400 and probe_http_status_code < 500 and on(instance) (probe_http_status_code{enable_alert_status_code="true"})
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }} ({{ $labels.env }}) Client Request Error Detected"
+          description: "The component is returning HTTP 4xx errors, which may indicate authentication issues, invalid requests, or configuration problems. Review recent changes or client integrations."
+          runbook_url: "http://grafana:3000/d/blackbox-monitoring"
+

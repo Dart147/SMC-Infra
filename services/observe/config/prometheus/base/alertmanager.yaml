@@ -1,0 +1,130 @@
+global:
+  resolve_timeout: 5m
+
+# ROOT Routing
+route:
+  receiver: 'default'
+  group_by: ['alertname', 'severity', 'env', 'service']
+  group_wait: 1m 
+  group_interval: 10m
+  repeat_interval: 4h
+  
+  # Child routes
+  routes:
+    # 1. Critical Hardware alerts
+    - match:
+        severity: critical
+        component: node_exporter
+      receiver: 'critical-alerts'
+      repeat_interval: 1h
+      continue: false
+    
+    # 2. All other critical alerts
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      continue: false
+    
+    # 3. Warning alerts
+    - match:
+        severity: warning
+      receiver: 'default'
+
+# Inhibition Rules: Suppress children alerts when root alerts are firing
+inhibit_rules:
+- source_match:
+    alertname: "ServiceDown"
+  target_match_re:
+    severity: "warning|info"
+  equal: ['instance', 'service']
+
+receivers:
+  # Default receiver
+  - name: 'default'
+    # Discord webhook
+    discord_configs:
+      - webhook_url_file: '/etc/alertmanager/secrets/discord/webhook-default'
+        send_resolved: true
+        # Go condition to judge if there are multiple components in an alert
+        title: '{{ if eq .Status "firing" }}⚠️{{ else }}✅{{ end }} {{ .CommonLabels.service }} ({{ .CommonLabels.env }}) {{ (index .Alerts 0).Annotations.summary | reReplaceAll "^.*\\) " "" }}'
+        message: |
+          {{- if eq .Status "firing" }}
+          **Highlights**
+          {{- range .Alerts }}
+          * Instance: `{{ .Labels.instance }}`
+          {{- if .Labels.component }}
+          * Component: {{ .Labels.component }}
+          {{- end }}
+          {{- end }}
+          **Detail**
+          * Description: {{ (index .Alerts 0).Annotations.description }}
+          * Alert: **{{ (index .Alerts 0).Labels.alertname }}**
+          {{- if (index .Alerts 0).Labels.severity}}
+          * Severity: **{{ (index .Alerts 0).Labels.severity | toUpper }}**
+          {{- end }}
+          {{- if (index .Alerts 0).Annotations.runbook_url }}
+          * [Dashboard]({{ (index .Alerts 0).Annotations.runbook_url }})
+          {{- end }}
+          {{- end }}
+          
+          **Timeline**
+          * Fired At: {{ (index .Alerts 0).StartsAt.Local.Format "2006-01-02 15:04:05" }}
+          
+          {{- else if eq .Status "resolved" }}
+          **Highlights**
+          {{- range .Alerts }}
+          * Instance: `{{ .Labels.instance }}`
+          * Resolved At: {{ (index .Alerts 0).EndsAt.Local.Format "2006-01-02 15:04:05" }}
+          {{- end }}
+          **Detail**
+          * Duration: {{ (index .Alerts 0).EndsAt.Sub (index .Alerts 0).StartsAt | humanizeDuration }}
+          {{- end }}
+
+          {{- if .CommonLabels.project }}
+          {{ .CommonLabels.project }}
+          {{- end }}
+        username: 'AlertBot'
+
+  - name: 'critical-alerts'
+    discord_configs:
+      - webhook_url_file: '/etc/alertmanager/secrets/discord/webhook-critical'
+        send_resolved: true
+        # Go condition to judge if there are multiple components in an alert
+        title: '{{ if eq .Status "firing" }}🚨{{ else }}✅{{ end }} {{ .CommonLabels.service }} ({{ .CommonLabels.env }}) {{ (index .Alerts 0).Annotations.summary | reReplaceAll "^.*\\) " "" }}'
+        message: |
+          {{- if eq .Status "firing" }}
+          **Highlights**
+          {{- range .Alerts }}
+          * Instance: `{{ .Labels.instance }}`
+          {{- if .Labels.component }}
+          * Component: {{ .Labels.component }}
+          {{- end }}
+          {{- end }}
+          **Detail**
+          * Description: {{ (index .Alerts 0).Annotations.description }}
+          * Alert: **{{ (index .Alerts 0).Labels.alertname }}**
+          {{- if (index .Alerts 0).Labels.severity}}
+          * Severity: **{{ (index .Alerts 0).Labels.severity | toUpper }}**
+          {{- end }}
+          {{- if (index .Alerts 0).Annotations.runbook_url }}
+          * [Dashboard]({{ (index .Alerts 0).Annotations.runbook_url }})
+          {{- end }}
+          {{- end }}
+          
+          **Timeline**
+          * Fired At: {{ (index .Alerts 0).StartsAt.Local.Format "2006-01-02 15:04:05" }}
+          
+          {{- else if eq .Status "resolved" }}
+          **Highlights**
+          {{- range .Alerts }}
+          * Instance: `{{ .Labels.instance }}`
+          * Resolved At: {{ .EndsAt.Local.Format "2006-01-02 15:04:05" }}
+          {{- end }}
+          **Detail**
+          * Duration: {{ (index .Alerts 0).EndsAt.Sub (index .Alerts 0).StartsAt | humanizeDuration }}
+          {{- end }}
+
+          {{- if .CommonLabels.project }}
+          {{ .CommonLabels.project }}
+          {{- end }}
+        username: 'AlertBot'

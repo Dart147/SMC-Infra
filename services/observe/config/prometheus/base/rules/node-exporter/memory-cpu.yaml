@@ -1,0 +1,44 @@
+groups:
+  - name: node_exporter_resource_alerts
+    interval: 15s
+    rules:
+      # --- Memory Usage Alerts ---
+      - alert: HostMemoryUsageHigh
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host({{ $labels.instance_name }}) Memory Usage Critically High"
+          description: "Memory usage is above 90% (current value: {{ $value | printf \"%.2f\" }}%). Risk of OOM killer triggering."
+
+      - alert: HostMemoryUsageHigh
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Host({{ $labels.instance_name }}) Memory Usage High"
+          description: "Memory usage is between 80-90% (current value: {{ $value | printf \"%.2f\" }}%)."
+
+      # --- CPU Load Average (Normalized) ---
+      # 此處將 Load 除以核心數，100% 代表所有核心皆滿載且排隊
+      - alert: HostSystemLoadHigh
+        expr: (node_load1 / count by (instance) (node_cpu_seconds_total{mode="idle"})) * 100 > 95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host({{ $labels.instance_name }}) System Load Critically Saturated"
+          description: "System load is exceeding 95% of total CPU capacity. System responsiveness is severely impacted."
+
+      # --- CPU Busy Rate ---
+      - alert: HostCpuBusyHigh
+        expr: (1 - avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m]))) * 100 > 95
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Host({{ $labels.instance_name }}) CPU Usage Critically High"
+          description: "CPU utilization is above 95% for more than 5 minutes."
+          

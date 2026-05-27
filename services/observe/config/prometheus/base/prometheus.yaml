@@ -1,0 +1,71 @@
+global:
+  scrape_interval: 30s
+  evaluation_interval: 15s
+
+# Alerting configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ["alertmanager:9093"]
+        
+# Load alert rules
+# Infrastructure and project-specific rules from rules/
+rule_files:
+  - "/etc/prometheus/base/rules/*.yml"
+  - "/etc/prometheus/base/rules/node-exporter/*.yml"
+  # - "/etc/prometheus/rules/*.yml" -> TODO: Add project-specific rules
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Blackbox exporter for external service health checks with file-based target discovery
+  # Load targets from infra/ and directories
+  - job_name: 'blackbox_http'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    file_sd_configs:
+      # Infrastructure and project-specific targets
+      # Pattern matches: targets/infra/*.yml and targets/<project>/*.yml
+      - files:
+          - /etc/prometheus/targets/*.yaml
+        refresh_interval: 30s
+    relabel_configs:
+      # Use the targets from the file as the probe target
+      - source_labels: [__address__]
+        target_label: __param_target
+      # Keep the original target as the instance label for identification
+      - source_labels: [__param_target]
+        target_label: instance
+      # Replace the scrape address with blackbox exporter
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+  
+  # Alertmanager for managing and dispatching alerts
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets: ["alertmanager:9093"]
+    metrics_path: /metrics
+  
+  # Node exporter for scraping hardware metrics from VMs
+  - job_name: 'node_exporter'
+    file_sd_configs:
+      - files:
+          - /etc/prometheus/targets/node-exporter/*.yaml
+        refresh_interval: 30s
+    metrics_path: /metrics
+    relabel_configs:
+      # Extract IP address from __address__ (format: IP:port)
+      - source_labels: [__address__]
+        regex: '([^:]+):.*'
+        target_label: ip
+        replacement: '${1}'
+      # Extract port from __address__ (format: IP:port)
+      - source_labels: [__address__]
+        regex: '[^:]+:(.*)'
+        target_label: port
+        replacement: '${1}'
+        
