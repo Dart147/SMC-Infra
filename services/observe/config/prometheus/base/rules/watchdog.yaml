@@ -1,0 +1,22 @@
+groups:
+  - name: watchdog
+    interval: 15s
+    rules:
+      - alert: Watchdog
+        expr: vector(1)
+        labels:
+          severity: none
+          service: prometheus
+          component: watchdog
+          team: SRE
+          env: prod
+          project: SMC
+          source: prometheus
+          monitoring-scope: meta
+        annotations:
+          summary: "Watchdog heartbeat (always firing)"
+          description: |
+            This alert is always firing. Alertmanager forwards it to
+            Healthchecks.io as a heartbeat ping. If pings stop arriving,
+            Healthchecks.io notifies us that the monitoring pipeline
+            (Prometheus, Alertmanager, host, or network) is down.

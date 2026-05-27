@@ -11,6 +11,15 @@ route:
   
   # Child routes
   routes:
+    # 0. Watchdog heartbeat → Healthchecks.io DMS (silent on Discord)
+    - match:
+        alertname: Watchdog
+      receiver: 'healthchecks'
+      group_wait: 0s
+      group_interval: 15m
+      repeat_interval: 15m
+      continue: false
+
     # 1. Critical Hardware alerts
     - match:
         severity: critical
@@ -84,6 +93,12 @@ receivers:
           {{ .CommonLabels.project }}
           {{- end }}
         username: 'AlertBot'
+
+  - name: 'healthchecks'
+    webhook_configs:
+      - url_file: '/etc/alertmanager/secrets/healthchecks/ping-url'
+        send_resolved: false
+        max_alerts: 0
 
   - name: 'critical-alerts'
     discord_configs:
