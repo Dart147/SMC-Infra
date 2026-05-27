@@ -39,3 +39,22 @@ test-results/
 *.njsproj
 *.sln
 *.sw?
+
+# Ignore Discord webhook secrets
+services/observe/config/prometheus/secrets/discord/*
+!services/observe/config/prometheus/secrets/discord/.gitkeep
+
+# Ignore Healthchecks API secrets
+services/observe/config/prometheus/secrets/healthchecks/*
+!services/observe/config/prometheus/secrets/healthchecks/.gitkeep
+
+# Ignore Discord webhook secrets
+services/observe/config/prometheus/secrets/discord/*
+!services/observe/config/prometheus/secrets/discord/README.md
+
+# Ignore project-specific targets and generated alert rules (GitOps generated)
+services/observe/config/prometheus/targets/**/*.yaml
+!services/observe/config/prometheus/targets/infra.prod.yaml
+
+# Ignore all files in node-exporter directory (GitOps generated)
+services/observe/config/prometheus/targets/node-exporter/*.yaml
