@@ -86,6 +86,8 @@ See `core/traefik/.env.example` for the variables to set in `core/traefik/.env`.
 
 ## Adding a New Subdomain
 
+Prerequisite: a wildcard A-record `*.${DOMAIN} → <host IP>` exists in Cloudflare
+
 1. In the target service's `docker-compose.yaml`, join the `smc-traefik` network (declared `external: true`) and add labels:
 
    ```yaml
@@ -98,7 +100,7 @@ See `core/traefik/.env.example` for the variables to set in `core/traefik/.env`.
      - "traefik.http.services.<name>.loadbalancer.server.port=<container-port>"
    ```
 
-1. Bring the service up. Traefik discovers the labels and issues a cert on the first request.
+2. Bring the service up. Traefik discovers the labels and reuses the existing wildcard cert.
 
 ## TLS Chain
 
