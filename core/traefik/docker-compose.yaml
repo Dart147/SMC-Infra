@@ -50,6 +50,8 @@ services:
       - "traefik.enable=true"
       # Dashboard served over HTTPS at traefik.${DOMAIN}
       - "traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN}`)"
+      - "traefik.http.routers.dashboard.tls.domains[0].sans=*.${DOMAIN}"  # Add wildcard cert for all subdomains
+      - "traefik.http.routers.dashboard.tls.domains[0].main=${DOMAIN}"
       - "traefik.http.routers.dashboard.entrypoints=websecure"
       - "traefik.http.routers.dashboard.tls=true"
       - "traefik.http.routers.dashboard.tls.certresolver=cloudflare"

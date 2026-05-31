@@ -1,0 +1,213 @@
+services:
+  grafana:
+    image: grafana/grafana:13.0.1
+    container_name: grafana
+    restart: unless-stopped
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    depends_on:
+      - loki
+      - tempo
+      - prometheus
+      - blackbox-exporter
+      - alertmanager
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.grafana.rule=Host(`${GRAFANA_HOST}`)"
+      - "traefik.http.routers.grafana.entrypoints=websecure"
+      - "traefik.http.routers.grafana.tls=true"
+      - "traefik.http.routers.grafana.tls.certresolver=cloudflare"
+    networks:
+      - traefik
+      - observe-net
+    volumes:
+      - ./datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+      # Future dashboards layout
+      #- ./dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
+      #- ./dashboards:/etc/grafana/provisioning/dashboards
+      - grafana-data:/var/lib/grafana
+  loki:
+    image: grafana/loki:3.7.2
+    container_name: loki
+    restart: unless-stopped
+    command: -config.file=/etc/loki/loki.yaml
+    ports:
+      - "3100:3100"
+    depends_on:
+      minio:
+        condition: service_healthy
+    volumes:
+      - ./config/loki.yaml:/etc/loki/loki.yaml
+    # no health check before 3.6.5
+    networks:
+      - observe-net
+
+  tempo:
+    image: grafana/tempo:2.10.5
+    container_name: tempo
+    restart: unless-stopped
+    command: ["--config.file=/etc/tempo.yaml"]
+    ports:
+      - "4317:4317"     # gRPC for OTLP
+      - "4318:4318"     # OTLP HTTP receiver
+      - "3200:3200"     # Tempo internal HTTP server (for Grafana)
+    depends_on:
+      minio:
+        condition: service_healthy
+    volumes:
+      - ./config/tempo.yaml:/etc/tempo.yaml
+    networks:
+      - observe-net
+
+  prometheus:
+    image: prom/prometheus:v3.11.3
+    container_name: prometheus
+    restart: unless-stopped
+    volumes:
+      - ./config/prometheus/base:/etc/prometheus/base:ro
+      - ./config/prometheus/targets:/etc/prometheus/targets:ro
+      - ./config/prometheus/rules:/etc/prometheus/rules:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/base/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9090/-/healthy || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.prometheus.rule=Host(`${PROMETHEUS_HOST}`)"
+      - "traefik.http.routers.prometheus.entrypoints=websecure"
+      - "traefik.http.routers.prometheus.tls=true"
+      - "traefik.http.routers.prometheus.tls.certresolver=cloudflare"
+      - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+    networks:
+      - traefik
+      - observe-net
+    depends_on:
+      - blackbox-exporter
+      - alertmanager
+
+  blackbox-exporter:
+    image: quay.io/prometheus/blackbox-exporter:v0.28.0
+    container_name: blackbox-exporter
+    restart: unless-stopped
+    volumes:
+      - ./config/prometheus/base/blackbox.yml:/config/blackbox.yml:ro
+    command:
+      - '--config.file=/config/blackbox.yml'
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9115/-/healthy || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - traefik
+      - observe-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.blackbox-exporter.rule=Host(`${BLACKBOX_EXPORTER_HOST}`)"
+      - "traefik.http.routers.blackbox-exporter.entrypoints=websecure"
+      - "traefik.http.routers.blackbox-exporter.tls=true"
+      - "traefik.http.routers.blackbox-exporter.tls.certresolver=cloudflare"
+      - "traefik.http.services.blackbox-exporter.loadbalancer.server.port=9115"
+
+  alertmanager:
+    image: prom/alertmanager:v0.32.1
+    container_name: alertmanager
+    restart: unless-stopped
+    volumes:
+      - ./config/prometheus/base/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - alertmanager-data:/alertmanager
+      - ./config/prometheus/secrets:/etc/alertmanager/secrets:ro
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+      - '--storage.path=/alertmanager'
+      - '--log.level=debug'
+    environment:
+      - TZ=Asia/Taipei
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9093/-/healthy || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    labels:
+        - "traefik.enable=true"
+        - "traefik.http.routers.alertmanager.rule=Host(`${ALERTMANAGER_HOST}`)"
+        - "traefik.http.routers.alertmanager.entrypoints=websecure"
+        - "traefik.http.routers.alertmanager.tls=true"
+        - "traefik.http.routers.alertmanager.tls.certresolver=cloudflare"
+        - "traefik.http.services.alertmanager.loadbalancer.server.port=9093"
+    networks:
+        - traefik
+        - observe-net
+
+  minio:
+    image: minio/minio:RELEASE.2025-10-15T17-29-55Z
+    container_name: minio
+    restart: unless-stopped
+    ports:
+      - "9000:9000"     # S3 API
+      - "9001:9001"     # MinIO Console UI
+    environment:
+      MINIO_ROOT_USER: admin
+      MINIO_ROOT_PASSWORD: password123
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - minio-data:/data
+    networks:
+      - traefik
+      - observe-net
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.minio.rule=Host(`${MINIO_HOST}`)"
+      - "traefik.http.routers.minio.entrypoints=websecure"
+      - "traefik.http.routers.minio.tls=true"
+      - "traefik.http.routers.minio.tls.certresolver=cloudflare"
+      - "traefik.http.services.minio.loadbalancer.server.port=9001"
+
+  setup-minio:
+    image: minio/mc:RELEASE.2025-08-13T08-35-41Z
+    container_name: setup-minio
+    restart: on-failure
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      sh -c "
+        sleep 5 &&
+        mc alias set local http://minio:9000 admin password123 &&
+        mc mb --ignore-existing local/loki-data &&
+        mc mb --ignore-existing local/tempo-data &&
+        mc ilm add local/loki-data --expiry-days 90 &&
+        mc ilm add local/tempo-data --expiry-days 90 &&
+        exit 0;
+      "
+    networks:
+      - observe-net
+
+
+volumes:
+  minio-data:
+  grafana-data:
+  prometheus-data:
+  alertmanager-data:
+
+networks:
+  traefik:
+    external: true
+  observe-net:

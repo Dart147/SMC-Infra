@@ -1,0 +1,143 @@
+- labels:
+    project: SMC
+    env: prod
+    source: blackbox
+    monitoring-scope: internal
+    service: grafana
+    component: grafana
+    enable_alert_latency: "true"
+    enable_alert_status_code: "true"
+    enable_alert_down: "true"
+    alert_level_critical: mention,discord
+    alert_level_info: discord
+    alert_level_warning: discord
+    discord_channel: '#smc-alert'
+    manager: "Destrier"
+  targets:
+    - "https://grafana.showmeyourcode.online"
+
+- labels:
+    project: SMC
+    env: prod
+    source: blackbox
+    monitoring-scope: internal
+    service: minio
+    component: minio
+    enable_alert_latency: "true"
+    enable_alert_status_code: "true"
+    enable_alert_down: "true"
+    alert_level_critical: mention,discord
+    alert_level_info: discord
+    alert_level_warning: discord
+    discord_channel: '#smc-alert'
+    manager: "Destrier"
+  targets:
+    - "https://minio.showmeyourcode.online"
+
+- labels:
+    project: SMC
+    env: prod
+    source: blackbox
+    monitoring-scope: internal  
+    service: prometheus
+    component: prometheus
+    enable_alert_latency: "true"
+    enable_alert_status_code: "true"
+    enable_alert_down: "true"
+    alert_level_critical: mention,discord
+    alert_level_info: discord
+    alert_level_warning: discord
+    discord_channel: '#smc-alert'
+    manager: "Destrier"
+  targets:
+    - "https://prometheus.showmeyourcode.online"
+
+- labels:
+    project: SMC
+    env: prod
+    source: blackbox
+    monitoring-scope: internal
+    service: blackbox
+    component: blackbox
+    enable_alert_latency: "true"
+    enable_alert_status_code: "true"
+    enable_alert_down: "true"
+    alert_level_critical: mention,discord
+    alert_level_info: discord
+    alert_level_warning: discord
+    discord_channel: '#smc-alert'
+    manager: "Destrier"
+  targets:
+    - "https://blackbox-exporter.showmeyourcode.online"
+
+- labels:
+    project: SMC
+    env: prod
+    source: blackbox
+    monitoring-scope: internal
+    service: infisical
+    component: infisical
+    enable_alert_latency: "true"
+    enable_alert_status_code: "true"
+    enable_alert_down: "true"
+    alert_level_critical: mention,discord
+    alert_level_info: discord
+    alert_level_warning: discord
+    discord_channel: '#smc-alert'
+    manager: "Destrier"
+  targets:
+    - "https://infisical.showmeyourcode.online"
+
+- labels:
+    project: SMC
+    env: prod
+    source: blackbox
+    monitoring-scope: internal
+    service: bitwarden
+    component: bitwarden
+    enable_alert_latency: "true"
+    enable_alert_status_code: "true"
+    enable_alert_down: "true"
+    alert_level_critical: mention,discord
+    alert_level_info: discord
+    alert_level_warning: discord
+    discord_channel: '#smc-alert'
+    manager: "Destrier"
+  targets:
+    - "https://bitwarden.showmeyourcode.online"
+
+- labels:
+    project: SMC
+    env: prod
+    source: blackbox
+    monitoring-scope: internal
+    service: netbox
+    component: netbox
+    enable_alert_latency: "true"
+    enable_alert_status_code: "true"
+    enable_alert_down: "true"
+    alert_level_critical: mention,discord
+    alert_level_info: discord
+    alert_level_warning: discord
+    discord_channel: '#smc-alert'
+    manager: "Destrier"
+  targets:
+    - "https://netbox.showmeyourcode.online"
+
+- labels:
+    project: SMC
+    env: prod
+    source: blackbox
+    monitoring-scope: internal
+    service: n8n
+    component: n8n
+    enable_alert_latency: "true"
+    enable_alert_status_code: "true"
+    enable_alert_down: "true"
+    alert_level_critical: mention,discord
+    alert_level_info: discord
+    alert_level_warning: discord
+    discord_channel: '#smc-alert'
+    manager: "Destrier"
+  targets:
+    - "https://n8n.showmeyourcode.online"

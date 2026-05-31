@@ -1,0 +1,34 @@
+groups:
+  - name: ssl_certificate
+    interval: 30m
+    rules:
+      # SSL Certificate Alerts
+      - alert: SSLCertificateExpiring
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 7 and probe_ssl_earliest_cert_expiry - time() > 0 and on(instance) (probe_ssl_earliest_cert_expiry{enable_alert_ssl_certificate="true"})
+        for: 1h
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.service }} ({{ $labels.env }}) SSL Certificate Expiring Soon"
+          description: "The SSL certificate will expire within the next 7 days. Renew the certificate immediately to prevent service disruption and security warnings for users."
+          runbook_url: "http://grafana:3000/d/blackbox-monitoring"
+      
+      - alert: SSLCertificateExpiring
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 30 and probe_ssl_earliest_cert_expiry - time() >= 86400 * 7 and on(instance) (probe_ssl_earliest_cert_expiry{enable_alert_ssl_certificate="true"})
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }} ({{ $labels.env }}) SSL Certificate Renewal Required"
+          description: "The SSL certificate will expire within the next 30 days. Schedule certificate renewal to avoid service interruption and maintain security compliance."
+          runbook_url: "http://grafana:3000/d/blackbox-monitoring"
+
+      - alert: SSLCertificateExpiring
+        expr: probe_ssl_earliest_cert_expiry - time() < 86400 * 60 and probe_ssl_earliest_cert_expiry - time() >= 86400 * 30 and on(instance) (probe_ssl_earliest_cert_expiry{enable_alert_ssl_certificate="true"})
+        for: 0s
+        labels:
+          severity: info
+        annotations:
+          summary: "{{ $labels.service }} ({{ $labels.env }}) SSL Certificate Renewal Reminder"
+          description: "The SSL certificate will expire within the next 60 days. Begin planning certificate renewal to ensure uninterrupted service operation."
+          runbook_url: "http://grafana:3000/d/blackbox-monitoring"

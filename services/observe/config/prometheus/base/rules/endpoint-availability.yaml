@@ -1,0 +1,14 @@
+groups:
+  - name: endpoint_availability
+    interval: 15s
+    rules:
+      # Endpoint Availability Alerts
+      - alert: EndpointDown
+        expr: probe_success == 0 and on(instance) (probe_success{enable_alert_down="true"})
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.service }} ({{ $labels.env }}) Service Unavailable"
+          description: "The component has been unreachable for over 1 minute. This may indicate a service outage or network connectivity issue that requires immediate attention."
+          runbook_url: "http://grafana:3000/d/blackbox-monitoring"

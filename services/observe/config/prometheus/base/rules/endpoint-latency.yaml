@@ -1,0 +1,35 @@
+groups:
+  - name: endpoint_latency
+    interval: 15s
+    rules:
+      # Endpoint Latency Alerts
+      - alert: EndpointLatencyHigh
+        expr: probe_duration_seconds > 5 and on(instance) (probe_duration_seconds{enable_alert_latency="true"})
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.service }} ({{ $labels.env }}) High Response Time Detected"
+          #summary: "{{ $labels.service }} ({{ $labels.env }}) High Response Time Detected"
+          description: "The component is experiencing critically high latency with response time exceeding 5 seconds. This severe performance degradation requires immediate investigation to prevent user impact."
+          runbook_url: "http://grafana:3000/d/blackbox-monitoring"
+
+      - alert: EndpointLatencyHigh
+        expr: probe_duration_seconds > 3 and probe_duration_seconds <= 5 and on(instance) (probe_duration_seconds{enable_alert_latency="true"})
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "{{ $labels.service }} ({{ $labels.env }}) High Response Time Detected"
+          description: "The component is showing degraded performance with response times between 3-5 seconds. Monitor closely as this may escalate to critical levels if not addressed."
+          runbook_url: "http://grafana:3000/d/blackbox-monitoring"
+
+      - alert: EndpointLatencyHigh
+        expr: probe_duration_seconds > 1 and probe_duration_seconds <= 3 and on(instance) (probe_duration_seconds{enable_alert_latency="true"})
+        for: 5m
+        labels:
+          severity: info
+        annotations:
+          summary: "{{ $labels.service }} ({{ $labels.env }}) High Response Time Detected"
+          description: "The component is experiencing slightly elevated response times between 1-3 seconds. This is informational and should be monitored to ensure performance remains stable."
+          runbook_url: "http://grafana:3000/d/blackbox-monitoring"

@@ -1,0 +1,15 @@
+groups:
+  - name: node_exporter_base
+    interval: 15s
+    rules:
+      # --- Node Exporter Availability Alerts ---
+      - alert: HostNodeExporterDown
+        expr: up{job="node_exporter"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "{{ $labels.instance_name }} Node Unreachable"
+          description: "Node Exporter has been unreachable on {{ $labels.instance_name }}"
+          runbook_url: "http://grafana:3000/d/node-exporter-full"
+          
