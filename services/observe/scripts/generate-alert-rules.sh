@@ -17,16 +17,16 @@ set -e
 get_catalog_filename() {
     case "$1" in
         "Endpoint-Availability")
-            echo "endpoint-availability.yml"
+            echo "endpoint-availability.yaml"
             ;;
         "Endpoint-Status Code")
-            echo "endpoint-status-code.yml"
+            echo "endpoint-status-code.yaml"
             ;;
         "Endpoint-Latency")
-            echo "endpoint-latency.yml"
+            echo "endpoint-latency.yaml"
             ;;
         "SSL-Certificate")
-            echo "ssl-certificate.yml"
+            echo "ssl-certificate.yaml"
             ;;
         *)
             echo ""
@@ -93,7 +93,7 @@ get_selection_file() {
     if [[ -n "$SELECTION_FILE" ]]; then
         echo "$SELECTION_FILE"
     else
-        echo "$OBSERVE_DIR/config/prometheus/rules/selections/$PROJECT/$ENVIRONMENT.yml"
+        echo "$OBSERVE_DIR/config/prometheus/rules/selections/$PROJECT/$ENVIRONMENT.yaml"
     fi
 }
 
@@ -101,7 +101,7 @@ get_output_file() {
     if [[ -n "$OUTPUT_FILE" ]]; then
         echo "$OUTPUT_FILE"
     else
-        echo "$OBSERVE_DIR/config/prometheus/rules/projects/$PROJECT/$ENVIRONMENT.yml"
+        echo "$OBSERVE_DIR/config/prometheus/rules/projects/$PROJECT/$ENVIRONMENT.yaml"
     fi
 }
 
