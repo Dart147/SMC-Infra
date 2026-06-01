@@ -90,6 +90,7 @@ services:
       - "traefik.http.routers.prometheus.tls=true"
       - "traefik.http.routers.prometheus.tls.certresolver=cloudflare"
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
+      - "traefik.http.routers.prometheus.middlewares=vpn-only@file"
     networks:
       - traefik
       - observe-net
@@ -120,6 +121,7 @@ services:
       - "traefik.http.routers.blackbox-exporter.tls=true"
       - "traefik.http.routers.blackbox-exporter.tls.certresolver=cloudflare"
       - "traefik.http.services.blackbox-exporter.loadbalancer.server.port=9115"
+      - "traefik.http.routers.blackbox-exporter.middlewares=vpn-only@file"
 
   alertmanager:
     image: prom/alertmanager:v0.32.1
@@ -147,6 +149,7 @@ services:
         - "traefik.http.routers.alertmanager.tls=true"
         - "traefik.http.routers.alertmanager.tls.certresolver=cloudflare"
         - "traefik.http.services.alertmanager.loadbalancer.server.port=9093"
+        - "traefik.http.routers.alertmanager.middlewares=vpn-only@file"
     networks:
         - traefik
         - observe-net
@@ -179,6 +182,7 @@ services:
       - "traefik.http.routers.minio.tls=true"
       - "traefik.http.routers.minio.tls.certresolver=cloudflare"
       - "traefik.http.services.minio.loadbalancer.server.port=9001"
+      - "traefik.http.routers.minio.middlewares=vpn-only@file"
 
   setup-minio:
     image: minio/mc:RELEASE.2025-08-13T08-35-41Z

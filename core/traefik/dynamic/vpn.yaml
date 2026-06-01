@@ -1,0 +1,17 @@
+# VPN-only access control (SMC-30).
+#
+# Reusable middleware that restricts a router to requests whose SOURCE IP is on
+# the Tailscale tailnet. Tailscale assigns every device an address in the CGNAT
+# range 100.64.0.0/10, so a packet arriving over the VPN reaches Traefik with a
+# 100.x source. Anything from the public internet falls outside the range and
+# gets 403.
+#
+# Attach to a router via a label:
+#   - "traefik.http.routers.<name>.middlewares=vpn-only@file"
+http:
+  middlewares:
+    vpn-only:
+      ipAllowList:
+        sourceRange:
+          - "100.64.0.0/10"   # Tailscale CGNAT range
+          - "127.0.0.1/32"    # on-host curl checks
