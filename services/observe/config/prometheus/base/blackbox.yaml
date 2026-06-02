@@ -7,7 +7,7 @@ modules:
       follow_redirects: true
       fail_if_not_ssl: true
       headers:
-        User-Agent: "Prometheus-Blackbox-Exporter/0.24.0"
+        User-Agent: "Prometheus-Blackbox-Exporter/0.28.0"
       preferred_ip_protocol: "ip4"
   http_post_2xx:
     prober: http
