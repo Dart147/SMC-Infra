@@ -40,9 +40,9 @@ scrape_configs:
       # Keep the original target as the instance label for identification
       - source_labels: [__param_target]
         target_label: instance
-      # Replace the scrape address with blackbox exporter
+      # Scrape blackbox via the tailscale
       - target_label: __address__
-        replacement: blackbox-exporter:9115
+        replacement: tailscale-probe:9115
   
   # Alertmanager for managing and dispatching alerts
   - job_name: 'alertmanager'

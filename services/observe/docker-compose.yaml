@@ -116,19 +116,27 @@ services:
       - blackbox-exporter
       - alertmanager
 
-  blackbox-exporter:
-    image: quay.io/prometheus/blackbox-exporter:v0.28.0
-    container_name: blackbox-exporter
+  # Tailscale sidecar: gives blackbox-exporter a tailnet identity so it can probe vpn-only subdomains.
+  # Shared net namespace gets a real tailscale0 interface for transparent routing.
+  tailscale-probe:
+    image: tailscale/tailscale:v1.98.4
+    container_name: tailscale-probe
+    hostname: blackbox-probe              # tailnet node name
     restart: unless-stopped
+    environment:
+      - TS_AUTHKEY=${TS_AUTHKEY}
+      - TS_STATE_DIR=/var/lib/tailscale
+      - TS_USERSPACE=false
+      # Uncomment if ACL uses tags (declare tag:monitoring in tagOwners)
+      # - TS_EXTRA_ARGS=--advertise-tags=tag:monitoring
+    devices:
+      - /dev/net/tun
+    cap_add:
+      - net_admin
+      - net_raw
     volumes:
-      - ./config/prometheus/base/blackbox.yaml:/config/blackbox.yaml:ro
-    command:
-      - '--config.file=/config/blackbox.yaml'
-    healthcheck:
-      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9115/-/healthy || exit 1" ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      - tailscale-probe-state:/var/lib/tailscale
+    # blackbox's :9115 is reachable inside this shared network.
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.blackbox-exporter.rule=Host(`${BLACKBOX_EXPORTER_HOST}`)"
@@ -140,6 +148,24 @@ services:
     networks:
       - traefik
       - observe-net
+
+  blackbox-exporter:
+    image: quay.io/prometheus/blackbox-exporter:v0.28.0
+    container_name: blackbox-exporter
+    restart: unless-stopped
+    # Share the sidecar's network namespace → all probe egress routes over the tailnet.
+    network_mode: service:tailscale-probe
+    depends_on:
+      - tailscale-probe
+    volumes:
+      - ./config/prometheus/base/blackbox.yaml:/config/blackbox.yaml:ro
+    command:
+      - '--config.file=/config/blackbox.yaml'
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9115/-/healthy || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   alertmanager:
     image: prom/alertmanager:v0.32.1
@@ -257,6 +283,7 @@ volumes:
   grafana-data:
   prometheus-data:
   alertmanager-data:
+  tailscale-probe-state:
 
 networks:
   traefik:
