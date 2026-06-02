@@ -60,7 +60,7 @@ receivers:
           {{- if eq .Status "firing" }}
           **Highlights**
           {{- range .Alerts }}
-          * Instance: `{{ .Labels.instance }}`
+          * Instance: {{ .Labels.instance }}
           {{- if .Labels.component }}
           * Component: {{ .Labels.component }}
           {{- end }}
@@ -74,15 +74,13 @@ receivers:
           {{- if (index .Alerts 0).Annotations.runbook_url }}
           * [Dashboard]({{ (index .Alerts 0).Annotations.runbook_url }})
           {{- end }}
-          {{- end }}
-          
           **Timeline**
           * Fired At: {{ (index .Alerts 0).StartsAt.Local.Format "2006-01-02 15:04:05" }}
           
           {{- else if eq .Status "resolved" }}
           **Highlights**
           {{- range .Alerts }}
-          * Instance: `{{ .Labels.instance }}`
+          * Instance: {{ .Labels.instance }}
           * Resolved At: {{ (index .Alerts 0).EndsAt.Local.Format "2006-01-02 15:04:05" }}
           {{- end }}
           **Detail**
@@ -92,7 +90,7 @@ receivers:
           {{- if .CommonLabels.project }}
           {{ .CommonLabels.project }}
           {{- end }}
-        username: 'AlertBot'
+        username: 'SMC Oncall'
 
   - name: 'healthchecks'
     webhook_configs:
@@ -110,7 +108,7 @@ receivers:
           {{- if eq .Status "firing" }}
           **Highlights**
           {{- range .Alerts }}
-          * Instance: `{{ .Labels.instance }}`
+          * Instance: {{ .Labels.instance }}
           {{- if .Labels.component }}
           * Component: {{ .Labels.component }}
           {{- end }}
@@ -124,15 +122,13 @@ receivers:
           {{- if (index .Alerts 0).Annotations.runbook_url }}
           * [Dashboard]({{ (index .Alerts 0).Annotations.runbook_url }})
           {{- end }}
-          {{- end }}
-          
           **Timeline**
           * Fired At: {{ (index .Alerts 0).StartsAt.Local.Format "2006-01-02 15:04:05" }}
           
           {{- else if eq .Status "resolved" }}
           **Highlights**
           {{- range .Alerts }}
-          * Instance: `{{ .Labels.instance }}`
+          * Instance: {{ .Labels.instance }}
           * Resolved At: {{ .EndsAt.Local.Format "2006-01-02 15:04:05" }}
           {{- end }}
           **Detail**
@@ -142,4 +138,4 @@ receivers:
           {{- if .CommonLabels.project }}
           {{ .CommonLabels.project }}
           {{- end }}
-        username: 'AlertBot'
+        username: 'SMC Oncall'

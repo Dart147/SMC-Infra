@@ -3,8 +3,62 @@
     env: prod
     source: blackbox
     monitoring-scope: internal
-    service: grafana
-    component: grafana
+    service: SMC App
+    component: SMC App
+    enable_alert_latency: "true"
+    enable_alert_status_code: "true"
+    enable_alert_down: "true"
+    alert_level_critical: mention,discord
+    alert_level_info: discord
+    alert_level_warning: discord
+    discord_channel: '#smc-alert'
+    manager: "Destrier"
+  targets:
+    - "https://showmeyourcode.online"
+
+- labels:
+    project: SMC
+    env: prod
+    source: blackbox
+    monitoring-scope: internal
+    service: Temporal
+    component: Temporal
+    enable_alert_latency: "true"
+    enable_alert_status_code: "true"
+    enable_alert_down: "true"
+    alert_level_critical: mention,discord
+    alert_level_info: discord
+    alert_level_warning: discord
+    discord_channel: '#smc-alert'
+    manager: "Destrier"
+  targets:
+    - "https://temporal.showmeyourcode.online"    
+
+- labels:
+    project: SMC
+    env: prod
+    source: blackbox
+    monitoring-scope: internal
+    service: Traefik
+    component: Traefik
+    enable_alert_latency: "true"
+    enable_alert_status_code: "true"
+    enable_alert_down: "true"
+    alert_level_critical: mention,discord
+    alert_level_info: discord
+    alert_level_warning: discord
+    discord_channel: '#smc-alert'
+    manager: "Destrier"
+  targets:
+    - "https://traefik.showmeyourcode.online"
+
+- labels:
+    project: SMC
+    env: prod
+    source: blackbox
+    monitoring-scope: internal
+    service: Grafana
+    component: Grafana
     enable_alert_latency: "true"
     enable_alert_status_code: "true"
     enable_alert_down: "true"
@@ -39,8 +93,8 @@
     env: prod
     source: blackbox
     monitoring-scope: internal  
-    service: prometheus
-    component: prometheus
+    service: Prometheus
+    component: Prometheus
     enable_alert_latency: "true"
     enable_alert_status_code: "true"
     enable_alert_down: "true"
@@ -75,8 +129,8 @@
     env: prod
     source: blackbox
     monitoring-scope: internal
-    service: infisical
-    component: infisical
+    service: Tempo
+    component: Tempo
     enable_alert_latency: "true"
     enable_alert_status_code: "true"
     enable_alert_down: "true"
@@ -86,15 +140,15 @@
     discord_channel: '#smc-alert'
     manager: "Destrier"
   targets:
-    - "https://infisical.showmeyourcode.online"
+    - "https://tempo.showmeyourcode.online"
 
 - labels:
     project: SMC
     env: prod
     source: blackbox
     monitoring-scope: internal
-    service: bitwarden
-    component: bitwarden
+    service: Loki
+    component: Loki
     enable_alert_latency: "true"
     enable_alert_status_code: "true"
     enable_alert_down: "true"
@@ -104,15 +158,15 @@
     discord_channel: '#smc-alert'
     manager: "Destrier"
   targets:
-    - "https://bitwarden.showmeyourcode.online"
+    - "https://loki.showmeyourcode.online"
 
 - labels:
     project: SMC
     env: prod
     source: blackbox
     monitoring-scope: internal
-    service: netbox
-    component: netbox
+    service: Alertmanager
+    component: Alertmanager
     enable_alert_latency: "true"
     enable_alert_status_code: "true"
     enable_alert_down: "true"
@@ -122,22 +176,58 @@
     discord_channel: '#smc-alert'
     manager: "Destrier"
   targets:
-    - "https://netbox.showmeyourcode.online"
+    - "https://alertmanager.showmeyourcode.online"
 
-- labels:
-    project: SMC
-    env: prod
-    source: blackbox
-    monitoring-scope: internal
-    service: n8n
-    component: n8n
-    enable_alert_latency: "true"
-    enable_alert_status_code: "true"
-    enable_alert_down: "true"
-    alert_level_critical: mention,discord
-    alert_level_info: discord
-    alert_level_warning: discord
-    discord_channel: '#smc-alert'
-    manager: "Destrier"
-  targets:
-    - "https://n8n.showmeyourcode.online"
+#- labels:
+#    project: SMC
+#    env: prod
+#    source: blackbox
+#    monitoring-scope: internal
+#    service: infisical
+#    component: infisical
+#    enable_alert_latency: "true"
+#    enable_alert_status_code: "true"
+#    enable_alert_down: "true"
+#    alert_level_critical: mention,discord
+#    alert_level_info: discord
+#    alert_level_warning: discord
+#    discord_channel: '#smc-alert'
+#    manager: "Destrier"
+#  targets:
+#    - "https://infisical.showmeyourcode.online"
+
+#- labels:
+#    project: SMC
+#    env: prod
+#    source: blackbox
+#    monitoring-scope: internal
+#    service: bitwarden
+#    component: bitwarden
+#    enable_alert_latency: "true"
+#    enable_alert_status_code: "true"
+#    enable_alert_down: "true"
+#    alert_level_critical: mention,discord
+#    alert_level_info: discord
+#    alert_level_warning: discord
+#    discord_channel: '#smc-alert'
+#    manager: "Destrier"
+#  targets:
+#    - "https://bitwarden.showmeyourcode.online"
+
+#- labels:
+#    project: SMC
+#    env: prod
+#    source: blackbox
+#    monitoring-scope: internal
+#    service: netbox
+#    component: netbox
+#    enable_alert_latency: "true"
+#    enable_alert_status_code: "true"
+#    enable_alert_down: "true"
+#    alert_level_critical: mention,discord
+#    alert_level_info: discord
+#    alert_level_warning: discord
+#    discord_channel: '#smc-alert'
+#    manager: "Destrier"
+#  targets:
+#    - "https://netbox.showmeyourcode.online"
