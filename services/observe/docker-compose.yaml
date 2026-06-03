@@ -23,15 +23,16 @@ services:
       - "traefik.http.routers.grafana.entrypoints=websecure"
       - "traefik.http.routers.grafana.tls=true"
       - "traefik.http.routers.grafana.tls.certresolver=cloudflare"
-    networks:
-      - traefik
-      - observe-net
     volumes:
       - ./datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
       # Future dashboards layout
       - ./dashboards.yaml:/etc/grafana/provisioning/dashboards/dashboards.yaml
       - ./dashboards:/etc/grafana/provisioning/dashboards
       - grafana-data:/var/lib/grafana
+    networks:
+      - smc-traefik
+      - observe-net
+
   loki:
     image: grafana/loki:3.7.2
     container_name: loki
@@ -54,8 +55,8 @@ services:
       - "traefik.http.services.loki.loadbalancer.server.port=3100"
       - "traefik.http.routers.loki.middlewares=vpn-only@file"
     networks:
+      - smc-traefik
       - observe-net
-      - traefik
 
   tempo:
     image: grafana/tempo:3.0.0
@@ -80,7 +81,7 @@ services:
       - "traefik.http.services.tempo.loadbalancer.server.port=3200"
       - "traefik.http.routers.tempo.middlewares=vpn-only@file"
     networks:
-      - traefik
+      - smc-traefik
       - observe-net
 
   prometheus:
@@ -109,12 +110,12 @@ services:
       - "traefik.http.routers.prometheus.tls.certresolver=cloudflare"
       - "traefik.http.services.prometheus.loadbalancer.server.port=9090"
       - "traefik.http.routers.prometheus.middlewares=vpn-only@file"
-    networks:
-      - traefik
-      - observe-net
     depends_on:
       - blackbox-exporter
       - alertmanager
+    networks:
+      - smc-traefik
+      - observe-net
 
   # Tailscale sidecar: gives blackbox-exporter a tailnet identity so it can probe vpn-only subdomains.
   # Shared net namespace gets a real tailscale0 interface for transparent routing.
@@ -146,7 +147,7 @@ services:
       - "traefik.http.services.blackbox-exporter.loadbalancer.server.port=9115"
       - "traefik.http.routers.blackbox-exporter.middlewares=vpn-only@file"
     networks:
-      - traefik
+      - smc-traefik
       - observe-net
 
   blackbox-exporter:
@@ -195,8 +196,9 @@ services:
         - "traefik.http.services.alertmanager.loadbalancer.server.port=9093"
         - "traefik.http.routers.alertmanager.middlewares=vpn-only@file"
     networks:
-        - traefik
+        - smc-traefik
         - observe-net
+
   node-exporter:
     image: prom/node-exporter:v1.11.1
     container_name: node-exporter
@@ -224,7 +226,7 @@ services:
       - "traefik.http.services.node-exporter.loadbalancer.server.port=9100"
       - "traefik.http.routers.node-exporter.middlewares=vpn-only@file"
     networks:
-      - traefik
+      - smc-traefik
       - observe-net
 
   minio:
@@ -254,7 +256,7 @@ services:
       - "traefik.http.services.minio.loadbalancer.server.port=9001"
       - "traefik.http.routers.minio.middlewares=vpn-only@file"
     networks:
-      - traefik
+      - smc-traefik
       - observe-net
 
   setup-minio:
@@ -286,6 +288,6 @@ volumes:
   tailscale-probe-state:
 
 networks:
-  traefik:
+  smc-traefik:
     external: true
   observe-net:
