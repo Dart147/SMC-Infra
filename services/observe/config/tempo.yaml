@@ -8,8 +8,9 @@ distributor:
         grpc:
           endpoint: "0.0.0.0:4317"
 
-ingester:
-  trace_idle_period: 10s
+# Tempo 3.0 removed the ingester write-path; Traces now live in live_store
+live_store:
+  max_trace_idle: 10s
   max_block_duration: 5m
 
 storage:
@@ -18,10 +19,14 @@ storage:
     s3:
       bucket: tempo-data
       endpoint: minio:9000
-      access_key: admin
-      secret_key: password123
+      access_key: ${TEMPO_S3_ACCESS_KEY}
+      secret_key: ${TEMPO_S3_SECRET_KEY}
       insecure: true
 
-compactor:
-  compaction:
-    block_retention: 2160h  # 90 days
+# Tempo 3.0 removed the standalone compactor; retention is now driven by
+# backend_scheduler (generates retention jobs) + backend_worker (executes them),
+backend_scheduler:
+  provider:
+    compaction:
+      compaction:
+        block_retention: 2160h  # 90 days
