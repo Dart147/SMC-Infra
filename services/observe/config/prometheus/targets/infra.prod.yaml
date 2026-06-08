@@ -129,42 +129,6 @@
     env: prod
     source: blackbox
     monitoring-scope: internal
-    service: Tempo
-    component: Tempo
-    enable_alert_latency: "true"
-    enable_alert_status_code: "true"
-    enable_alert_down: "true"
-    alert_level_critical: mention,discord
-    alert_level_info: discord
-    alert_level_warning: discord
-    discord_channel: '#smc-alert'
-    manager: "Destrier"
-  targets:
-    - "https://tempo.showmeyourcode.online"
-
-- labels:
-    project: SMC
-    env: prod
-    source: blackbox
-    monitoring-scope: internal
-    service: Loki
-    component: Loki
-    enable_alert_latency: "true"
-    enable_alert_status_code: "true"
-    enable_alert_down: "true"
-    alert_level_critical: mention,discord
-    alert_level_info: discord
-    alert_level_warning: discord
-    discord_channel: '#smc-alert'
-    manager: "Destrier"
-  targets:
-    - "https://loki.showmeyourcode.online"
-
-- labels:
-    project: SMC
-    env: prod
-    source: blackbox
-    monitoring-scope: internal
     service: Alertmanager
     component: Alertmanager
     enable_alert_latency: "true"
