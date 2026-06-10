@@ -189,6 +189,7 @@ services:
     image: prom/node-exporter:v1.11.1
     container_name: node-exporter
     restart: unless-stopped
+    hostname: epl-1080
     volumes:
       - /proc:/host/proc:ro    # Read system process info
       - /sys:/host/sys:ro      # Read system info

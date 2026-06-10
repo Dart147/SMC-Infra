@@ -11,13 +11,13 @@ route:
   
   # Child routes
   routes:
-    # 0. Watchdog heartbeat → Healthchecks.io DMS (silent on Discord)
+    # 0. Watchdog heartbeat → Healthchecks.io
     - match:
         alertname: Watchdog
       receiver: 'healthchecks'
       group_wait: 0s
-      group_interval: 15m
-      repeat_interval: 15m
+      group_interval: 5m # repeat must not be a multiple of group_interval, or pings slip to 2x and race the Healthcheck timeout
+      repeat_interval: 12m
       continue: false
 
     # 1. Critical Hardware alerts
