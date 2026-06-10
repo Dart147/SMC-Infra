@@ -4,7 +4,7 @@ groups:
     rules:
       # --- Node Exporter Availability Alerts ---
       - alert: HostNodeExporterDown
-        expr: up{job="node_exporter"} == 0
+        expr: up{job="Node-Exporter"} == 0
         for: 2m
         labels:
           severity: critical
