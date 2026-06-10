@@ -70,6 +70,24 @@ services:
       - observe-net
       - smc-observe-ingest
 
+  vector:
+    image: timberio/vector:0.56.0-alpine
+    container_name: vector
+    restart: unless-stopped
+    command: ["--config", "/etc/vector/vector.toml"]
+    volumes:
+      - ./config/vector.toml:/etc/vector/vector.toml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: [ "CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:8686/api/health || exit 1" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    depends_on:
+      - loki
+    networks:
+      - observe-net
+
   prometheus:
     image: prom/prometheus:v3.12.0
     container_name: prometheus
@@ -102,6 +120,7 @@ services:
     networks:
       - smc-traefik
       - observe-net
+      - smc-observe-ingest
 
   # Tailscale sidecar: gives blackbox-exporter a tailnet identity so it can probe vpn-only subdomains.
   # Shared net namespace gets a real tailscale0 interface for transparent routing.
