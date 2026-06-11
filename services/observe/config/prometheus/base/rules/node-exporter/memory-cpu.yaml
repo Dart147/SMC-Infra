@@ -22,7 +22,7 @@ groups:
           description: "Memory usage is between 80-90% (current value: {{ $value | printf \"%.2f\" }}%)."
 
       # --- CPU Load Average (Normalized) ---
-      # 此處將 Load 除以核心數，100% 代表所有核心皆滿載且排隊
+      # Divide Load to core count, 100% represents all cores fully utilized with queuing
       - alert: HostSystemLoadHigh
         expr: (node_load1 / count by (instance) (node_cpu_seconds_total{mode="idle"})) * 100 > 95
         for: 5m
