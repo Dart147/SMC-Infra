@@ -1,0 +1,6 @@
+# Copy to terraform.tfvars (gitignored) and fill in real values.
+# Bucket names are GLOBAL across all AWS accounts — suffix with your
+# account id (or similar) to guarantee uniqueness.
+bucket_name    = "smc-postgres-backup-<your-aws-account-id>"
+region         = "ap-northeast-1"
+retention_days = 30
