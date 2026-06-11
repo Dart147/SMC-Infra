@@ -5,10 +5,7 @@ module "backup_bucket" {
   retention_days = var.retention_days
 }
 
-# Runtime identity for the backup job on epl-1080. Long-lived key on a
-# server, so it gets the least possible power: PutObject on this bucket's
-# objects and nothing else (no Get/List/Delete — a leaked key can append
-# backups but never read or destroy them).
+# PutObject on this bucket's objects and nothing else (a leaked key can append backups but never read or destroy them).
 resource "aws_iam_user" "backup_writer" {
   name = "smc-backup-writer"
 }
