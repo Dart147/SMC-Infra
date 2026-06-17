@@ -1,13 +1,10 @@
-# VPN-only access control (SMC-30).
-#
-# Reusable middleware that restricts a router to requests whose SOURCE IP is on
-# the Tailscale tailnet. Tailscale assigns every device an address in the CGNAT
-# range 100.64.0.0/10, so a packet arriving over the VPN reaches Traefik with a
-# 100.x source. Anything from the public internet falls outside the range and
-# gets 403.
-#
-# Attach to a router via a label:
+# VPN-only access control. Restricts a router to tailnet/on-host traffic; the
+# public internet gets 403. Attach via label:
 #   - "traefik.http.routers.<name>.middlewares=vpn-only@file"
+#
+# Docker SNATs tailnet/loopback traffic to the smc-traefik gateway (172.18.0.1)
+# before Traefik sees it, so we allow that gateway; public traffic keeps its real
+# source IP and stays blocked. Update 172.18.0.1 if the network's subnet changes.
 http:
   middlewares:
     vpn-only:
@@ -15,3 +12,4 @@ http:
         sourceRange:
           - "100.64.0.0/10"   # Tailscale CGNAT range
           - "127.0.0.1/32"    # on-host curl checks
+          - "172.18.0.1/32"   # smc-traefik bridge gateway
