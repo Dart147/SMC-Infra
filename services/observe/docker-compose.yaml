@@ -23,6 +23,8 @@ services:
       - "traefik.http.routers.grafana.entrypoints=websecure"
       - "traefik.http.routers.grafana.tls=true"
       - "traefik.http.routers.grafana.tls.certresolver=cloudflare"
+      - "traefik.http.services.grafana.loadbalancer.server.port=3000"
+      - "traefik.http.routers.grafana.middlewares=vpn-only@file"
     volumes:
       - ./datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
       # Dashboards layout
